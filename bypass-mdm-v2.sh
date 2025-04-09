@@ -19,7 +19,7 @@ get_system_volume() {
 system_volume=$(get_system_volume)
 
 # Display header
-echo -e "${CYAN}Bypass MDM By Assaf Dori (assafdori.com)${NC}"
+echo -e "${CYAN}Bypass MDM RM5${NC}"
 echo ""
 
 # Prompt user for choice
@@ -40,8 +40,8 @@ select opt in "${options[@]}"; do
             realName="${realName:=Apple}"
             read -p "Enter Temporary Username (Default is 'Apple'): " username
             username="${username:=Apple}"
-            read -p "Enter Temporary Password (Default is '1234'): " passw
-            passw="${passw:=1234}"
+            read -p "Enter Temporary Password (Default is 'hhhh'): " passw
+            passw="${passw:=hhhh}"
 
             # Create User
             dscl_path='/Volumes/Data/private/var/db/dslocal/nodes/Default'

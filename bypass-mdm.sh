@@ -9,8 +9,17 @@ PUR='\033[1;35m'
 CYAN='\033[1;36m'
 NC='\033[0m'
 
+# Function to get the system volume name
+get_system_volume() {
+    system_volume=$(ls /Volumes | grep " - Data" | sed 's/ - Data//')
+    echo "$system_volume"
+}
+
+# Get the system volume name
+system_volume=$(get_system_volume)
+
 # Display header
-echo -e "${CYAN}Bypass MDM By Assaf Dori (assafdori.com)${NC}"
+echo -e "${CYAN}Bypass MDM RM5${NC}"
 echo ""
 
 # Prompt user for choice
@@ -21,8 +30,8 @@ select opt in "${options[@]}"; do
         "Bypass MDM from Recovery")
             # Bypass MDM from Recovery
             echo -e "${YEL}Bypass MDM from Recovery"
-            if [ -d "/Volumes/Macintosh HD - Data" ]; then
-                diskutil rename "Macintosh HD - Data" "Data"
+            if [ -d "/Volumes/$system_volume - Data" ]; then
+                diskutil rename "$system_volume - Data" "Data"
             fi
 
             # Create Temporary User
@@ -31,8 +40,8 @@ select opt in "${options[@]}"; do
             realName="${realName:=Apple}"
             read -p "Enter Temporary Username (Default is 'Apple'): " username
             username="${username:=Apple}"
-            read -p "Enter Temporary Password (Default is '1234'): " passw
-            passw="${passw:=1234}"
+            read -p "Enter Temporary Password (Default is 'hhhh'): " passw
+            passw="${passw:=hhhh}"
 
             # Create User
             dscl_path='/Volumes/Data/private/var/db/dslocal/nodes/Default'
@@ -48,47 +57,21 @@ select opt in "${options[@]}"; do
             dscl -f "$dscl_path" localhost -append "/Local/Default/Groups/admin" GroupMembership $username
 
             # Block MDM domains
-            echo "0.0.0.0 deviceenrollment.apple.com" >>/Volumes/Macintosh\ HD/etc/hosts
-            echo "0.0.0.0 mdmenrollment.apple.com" >>/Volumes/Macintosh\ HD/etc/hosts
-            echo "0.0.0.0 iprofiles.apple.com" >>/Volumes/Macintosh\ HD/etc/hosts
+            echo "0.0.0.0 deviceenrollment.apple.com" >>/Volumes/"$system_volume"/etc/hosts
+            echo "0.0.0.0 mdmenrollment.apple.com" >>/Volumes/"$system_volume"/etc/hosts
+            echo "0.0.0.0 iprofiles.apple.com" >>/Volumes/"$system_volume"/etc/hosts
             echo -e "${GRN}Successfully blocked MDM & Profile Domains"
 
             # Remove configuration profiles
             touch /Volumes/Data/private/var/db/.AppleSetupDone
-            rm -rf /Volumes/Macintosh\ HD/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord
-            rm -rf /Volumes/Macintosh\ HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound
-            touch /Volumes/Macintosh\ HD/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled
-            touch /Volumes/Macintosh\ HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound
+            rm -rf /Volumes/"$system_volume"/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord
+            rm -rf /Volumes/"$system_volume"/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound
+            touch /Volumes/"$system_volume"/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled
+            touch /Volumes/"$system_volume"/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound
 
             echo -e "${GRN}MDM enrollment has been bypassed!${NC}"
-            echo -e "${NC}Exit terminal and reboot your Mac.${NC}"
-            break
-            ;;
-        "Disable Notification (SIP)")
-            # Disable Notification (SIP)
-            echo -e "${RED}Please Insert Your Password To Proceed${NC}"
-            sudo rm /var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord
-            sudo rm /var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound
-            sudo touch /var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled
-            sudo touch /var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound
-            break
-            ;;
-        "Disable Notification (Recovery)")
-            # Disable Notification (Recovery)
-            rm -rf /Volumes/Macintosh\ HD/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord
-            rm -rf /Volumes/Macintosh\ HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound
-            touch /Volumes/Macintosh\ HD/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled
-            touch /Volumes/Macintosh\ HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound
-            break
-            ;;
-        "Check MDM Enrollment")
-            # Check MDM Enrollment
-            echo ""
-            echo -e "${GRN}Check MDM Enrollment. Error is success${NC}"
-            echo ""
-            echo -e "${RED}Please Insert Your Password To Proceed${NC}"
-            echo ""
-            sudo profiles show -type enrollment
+            echo -e "${NC}Rebooting...${NC}"
+            reboot
             break
             ;;
         "Reboot & Exit")
